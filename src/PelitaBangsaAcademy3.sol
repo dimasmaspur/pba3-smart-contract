@@ -43,14 +43,12 @@ contract PelitaBangsaAcademy3 is ERC20, ERC20Burnable, Ownable, ERC20Permit {
         _mint(msg.sender, 10000000000 * 10 ** decimals());
     }
 
-    function rentVilla(uint256 rentalDays) public {
+    // Updated rentVilla function to be payable
+    function rentVilla(uint256 rentalDays) public payable {
         require(rentalDays > 0, "Rental duration must be greater than zero");
 
         uint256 totalPayment = villaPricePerDay * rentalDays;
-        require(IERC20(paymentToken).balanceOf(msg.sender) >= totalPayment, "Insufficient payment");
-
-        // Transfer payment tokens from renter to the contract
-        IERC20(paymentToken).transferFrom(msg.sender, address(this), totalPayment);
+        require(msg.value == totalPayment, "Incorrect Ether value sent");
 
         // Calculate rental period
         uint256 startTimestamp = block.timestamp;
@@ -69,15 +67,23 @@ contract PelitaBangsaAcademy3 is ERC20, ERC20Burnable, Ownable, ERC20Permit {
         emit Rented(msg.sender, totalPayment, rentalDays, startTimestamp, endTimestamp);
     }
 
-    function getStatus(address renter) public view returns (uint256, uint256, uint256) {
+    // Updated getStatus function to include the renter's address
+    function getStatus(address renter) public view returns (address, uint256, uint256, uint256) {
         Rental memory rental = rentals[renter];
-        return (rental.daysRented, rental.startTimestamp, rental.endTimestamp);
+        return (renter, rental.daysRented, rental.startTimestamp, rental.endTimestamp);
     }
 
     function withdrawTokens(address tokenAddress) public onlyOwner {
         uint256 balance = IERC20(tokenAddress).balanceOf(address(this));
         require(balance > 0, "No tokens to withdraw");
         IERC20(tokenAddress).transfer(owner(), balance);
+    }
+
+    // New function to withdraw Ether collected from rent payments
+    function withdrawEther() public onlyOwner {
+        uint256 balance = address(this).balance;
+        require(balance > 0, "No Ether to withdraw");
+        payable(owner()).transfer(balance);
     }
 
     function setVillaPricePerDay(uint256 _villaPricePerDay) public onlyOwner {
@@ -93,3 +99,4 @@ contract MockERC20 is ERC20 {
         _mint(to, amount);
     }
 }
+ 

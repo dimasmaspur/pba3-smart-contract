@@ -10,7 +10,6 @@ contract PelitaBangsaAcademy3Test is Test {
     MockERC20 paymentToken;
     address owner = address(0x6858370F0002F8711ab4912e6ec293EB1b32dB34);
     address renter = address(0xe7a80B623c415f1F228d30863e15849e999ad9Dd);
-   
 
     function setUp() public {
         paymentToken = new MockERC20("PaymentToken", "PTK");
@@ -33,7 +32,7 @@ contract PelitaBangsaAcademy3Test is Test {
         villaRental.rentVilla(5); // Rent for 5 days
         vm.stopPrank();
 
-        (uint256 daysRented, uint256 startTimestamp, uint256 endTimestamp) = villaRental.getStatus(renter);
+        ( , uint256 daysRented, uint256 startTimestamp, uint256 endTimestamp) = villaRental.getStatus(renter);
         assertEq(daysRented, 5);
         assertEq(endTimestamp, startTimestamp + 5 days);
         assertEq(paymentToken.balanceOf(address(villaRental)), 500 * 10**18);
@@ -56,7 +55,7 @@ contract PelitaBangsaAcademy3Test is Test {
     }
 
     function testGetStatusForNonRenter() public view {
-        (uint256 daysRented, uint256 startTimestamp, uint256 endTimestamp) = villaRental.getStatus(address(0x789));
+        ( , uint256 daysRented, uint256 startTimestamp, uint256 endTimestamp) = villaRental.getStatus(address(0x789));
         assertEq(daysRented, 0);
         assertEq(startTimestamp, 0);
         assertEq(endTimestamp, 0);
@@ -95,7 +94,6 @@ contract PelitaBangsaAcademy3Test is Test {
 
     function testSetVillaPricePerDayAsNonOwner() public {
         vm.startPrank(renter);
-        
         vm.expectRevert();
         villaRental.setVillaPricePerDay(200 * 10**18);
         vm.stopPrank();
