@@ -15,7 +15,7 @@ contract PelitaBangsaAcademy3Test is Test {
         paymentToken = new MockERC20("PaymentToken", "PTK");
         villaRental = new PelitaBangsaAcademy3(address(paymentToken), 100 * 10**18, owner);
 
-        // Mint and approve tokens for renter
+        // Mint and approve tokens for renter.
         paymentToken.mint(renter, 1000 * 10**18);
         vm.prank(renter);
         paymentToken.approve(address(villaRental), type(uint256).max);

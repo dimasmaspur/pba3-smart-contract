@@ -91,7 +91,7 @@ contract PelitaBangsaAcademy3 is ERC20, ERC20Burnable, Ownable, ERC20Permit {
     }
 }
 
-// MockERC20 implementation
+// MockERC20 implementations
 contract MockERC20 is ERC20 {
     constructor(string memory name, string memory symbol) ERC20(name, symbol) {}
 
