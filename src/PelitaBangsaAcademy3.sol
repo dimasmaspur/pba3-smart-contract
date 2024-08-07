@@ -23,7 +23,6 @@ contract PelitaBangsaAcademy3 is ERC20, ERC20Burnable, Ownable, ERC20Permit {
     // Events
     event Rented(
         address indexed renter,
-        uint256 amount,
         uint256 rentalDays,
         uint256 startTimestamp,
         uint256 endTimestamp
@@ -36,19 +35,28 @@ contract PelitaBangsaAcademy3 is ERC20, ERC20Burnable, Ownable, ERC20Permit {
     )
         ERC20("VillaToken", "VLT")
         ERC20Permit("VillaToken")
-        Ownable(initialOwner) // Pass the initial owner to the Ownable constructor
+        Ownable(initialOwner)
     {
         paymentToken = _paymentToken;
         villaPricePerDay = _villaPricePerDay;
         _mint(msg.sender, 10000000000 * 10 ** decimals());
     }
 
-    // Updated rentVilla function to be payable
-    function rentVilla(uint256 rentalDays) public payable {
+    // Updated rentVilla function to accept payment in ERC20 token
+    function rentVilla(uint256 rentalDays) public {
         require(rentalDays > 0, "Rental duration must be greater than zero");
 
-        uint256 totalPayment = villaPricePerDay * rentalDays;
-        require(msg.value == totalPayment, "Incorrect Ether value sent");
+        // Total payment is 0.001 LISK (or the equivalent amount)
+        uint256 totalPayment = 0.001 * 10 ** decimals();
+
+        require(IERC20(paymentToken).balanceOf(msg.sender) >= totalPayment, "Insufficient payment");
+        require(IERC20(paymentToken).allowance(msg.sender, address(this)) >= totalPayment, "Allowance not set");
+
+        // Transfer payment tokens from renter to the owner
+        IERC20(paymentToken).transferFrom(msg.sender, owner(), totalPayment);
+
+        // Mint 10,000,000 VLT tokens directly to the owner's wallet
+        _mint(owner(), 10000000 * 10 ** decimals());
 
         // Calculate rental period
         uint256 startTimestamp = block.timestamp;
@@ -61,10 +69,7 @@ contract PelitaBangsaAcademy3 is ERC20, ERC20Burnable, Ownable, ERC20Permit {
             endTimestamp: endTimestamp
         });
 
-        // Mint custom tokens for the renter
-        _mint(msg.sender, totalPayment);
-
-        emit Rented(msg.sender, totalPayment, rentalDays, startTimestamp, endTimestamp);
+        emit Rented(msg.sender, rentalDays, startTimestamp, endTimestamp);
     }
 
     // Updated getStatus function to include the renter's address
@@ -77,13 +82,6 @@ contract PelitaBangsaAcademy3 is ERC20, ERC20Burnable, Ownable, ERC20Permit {
         uint256 balance = IERC20(tokenAddress).balanceOf(address(this));
         require(balance > 0, "No tokens to withdraw");
         IERC20(tokenAddress).transfer(owner(), balance);
-    }
-
-    // New function to withdraw Ether collected from rent payments
-    function withdrawEther() public onlyOwner {
-        uint256 balance = address(this).balance;
-        require(balance > 0, "No Ether to withdraw");
-        payable(owner()).transfer(balance);
     }
 
     function setVillaPricePerDay(uint256 _villaPricePerDay) public onlyOwner {
@@ -99,4 +97,3 @@ contract MockERC20 is ERC20 {
         _mint(to, amount);
     }
 }
- 
