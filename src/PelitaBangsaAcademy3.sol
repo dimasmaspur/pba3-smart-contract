@@ -47,7 +47,7 @@ contract PelitaBangsaAcademy3 is ERC20, ERC20Burnable, Ownable, ERC20Permit {
         require(rentalDays > 0, "Rental duration must be greater than zero");
 
         // Total payment is 0.001 LISK (or the equivalent amount)
-        uint256 totalPayment = 0.001 * 10 ** decimals();
+        uint256 totalPayment = (1 * 10 ** decimals()) / 1000;   // or use 0.001 instead of 1/1000r if you are using remix-ide
 
         require(IERC20(paymentToken).balanceOf(msg.sender) >= totalPayment, "Insufficient payment");
         require(IERC20(paymentToken).allowance(msg.sender, address(this)) >= totalPayment, "Allowance not set");
@@ -76,6 +76,10 @@ contract PelitaBangsaAcademy3 is ERC20, ERC20Burnable, Ownable, ERC20Permit {
     function getStatus(address renter) public view returns (address, uint256, uint256, uint256) {
         Rental memory rental = rentals[renter];
         return (renter, rental.daysRented, rental.startTimestamp, rental.endTimestamp);
+    }
+
+     function getPingString() public pure returns (string memory) {
+        return "Hello, World!";
     }
 
     function withdrawTokens(address tokenAddress) public onlyOwner {
