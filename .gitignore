@@ -1,1 +1,18 @@
-node_modules
+# Build artifacts
+out/
+cache/
+
+# Dependency directories
+node_modules/
+
+# OS-generated files
+.DS_Store
+Thumbs.db
+
+# Local configuration
+.vscode/
+*.suo
+*.user
+*.sln
+*.tmp
+*.log
