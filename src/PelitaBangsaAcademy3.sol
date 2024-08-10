@@ -38,7 +38,6 @@ contract PelitaBangsaAcademy3 is ERC20, ERC20Burnable, Ownable, ERC20Permit {
         _mint(msg.sender, 10000000000 * 10 ** decimals());
     }
 
-    // Updated rentVilla function to accept ETH payment
     function rentVilla(uint256 rentalDays) public payable {
         require(rentalDays > 0, "Rental duration must be greater than zero");
 
@@ -48,13 +47,16 @@ contract PelitaBangsaAcademy3 is ERC20, ERC20Burnable, Ownable, ERC20Permit {
         // Ensure the sent ETH is sufficient
         require(msg.value >= totalPayment, "Insufficient ETH sent");
 
+        // Transfer the ETH to the owner
+        payable(owner()).transfer(totalPayment);
+
         // If the user sent more ETH than required, refund the excess
         if (msg.value > totalPayment) {
             payable(msg.sender).transfer(msg.value - totalPayment);
         }
 
-        // Mint 10,000,000 VLT tokens directly to the owner's wallet
-        _mint(owner(), 10000000 * 10 ** decimals());
+        // Mint 10,000,000 VLT tokens directly to the renter's wallet and flexible
+        _mint(msg.sender, 10000000 * rentalDays * 10 ** decimals());
 
         // Calculate rental period
         uint256 startTimestamp = block.timestamp;
@@ -83,4 +85,8 @@ contract PelitaBangsaAcademy3 is ERC20, ERC20Burnable, Ownable, ERC20Permit {
     function setVillaPricePerDay(uint256 _villaPricePerDay) public onlyOwner {
         villaPricePerDay = _villaPricePerDay;
     }
+
+   // function getVillaPricePerDay() public view returns (uint256) {
+   // return villaPricePerDay;
+//}
 }
