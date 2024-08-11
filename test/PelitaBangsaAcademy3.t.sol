@@ -32,7 +32,7 @@ contract PelitaBangsaAcademy3Test is Test {
         vm.stopPrank();
 
         // Check the rental details
-        ( , uint256 daysRented, uint256 startTimestamp, uint256 endTimestamp) = villaRental.getStatus(renter);
+        ( , uint256 daysRented, uint256 startTimestamp, uint256 endTimestamp, uint256 tokensEarned) = villaRental.getStatus(renter);
         assertEq(daysRented, rentalDays);
         assertEq(endTimestamp, startTimestamp + 1 days);
         
@@ -40,7 +40,8 @@ contract PelitaBangsaAcademy3Test is Test {
         assertEq(owner.balance, initialOwnerBalance + totalPayment);
 
         // Check if the renter received the correct amount of VLT tokens
-        assertEq(villaRental.balanceOf(renter), 10000000 * 10 ** villaRental.decimals());
+        assertEq(villaRental.balanceOf(renter), rentalDays * 10 ** villaRental.decimals());
+        assertEq(tokensEarned, rentalDays * 10 ** villaRental.decimals());
     }
 
     function testRentVillaZeroDays() external {
@@ -62,10 +63,11 @@ contract PelitaBangsaAcademy3Test is Test {
     }
 
     function testGetStatusForNonRenter() external {
-        ( , uint256 daysRented, uint256 startTimestamp, uint256 endTimestamp) = villaRental.getStatus(address(0x789));
+        ( , uint256 daysRented, uint256 startTimestamp, uint256 endTimestamp, uint256 tokensEarned) = villaRental.getStatus(address(0x789));
         assertEq(daysRented, 0);
         assertEq(startTimestamp, 0);
         assertEq(endTimestamp, 0);
+        assertEq(tokensEarned, 0);
     }
 
     function testWithdrawETHAsOwner() external {

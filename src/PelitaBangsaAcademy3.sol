@@ -13,6 +13,7 @@ contract PelitaBangsaAcademy3 is ERC20, ERC20Burnable, Ownable, ERC20Permit {
         uint256 daysRented;
         uint256 startTimestamp;
         uint256 endTimestamp;
+        uint256 tokensEarned;
     }
 
     // Mapping to track villa renters and their rental information
@@ -35,7 +36,7 @@ contract PelitaBangsaAcademy3 is ERC20, ERC20Burnable, Ownable, ERC20Permit {
         Ownable(initialOwner)
     {
         villaPricePerDay = _villaPricePerDay;
-        _mint(msg.sender, 10000000000 * 10 ** decimals());
+        _mint(msg.sender, 10000000000 * 10 ** decimals()); // Minting initial supply to the owner
     }
 
     function rentVilla(uint256 rentalDays) public payable {
@@ -55,8 +56,9 @@ contract PelitaBangsaAcademy3 is ERC20, ERC20Burnable, Ownable, ERC20Permit {
             payable(msg.sender).transfer(msg.value - totalPayment);
         }
 
-        // Mint 10,000,000 VLT tokens directly to the renter's wallet and flexible
-        _mint(msg.sender, 10000000 * rentalDays * 10 ** decimals());
+        // Mint 1 VLT token per rental day to the renter's wallet
+        uint256 tokensToMint = rentalDays * 10 ** decimals();
+        _mint(msg.sender, tokensToMint);
 
         // Calculate rental period
         uint256 startTimestamp = block.timestamp;
@@ -66,7 +68,8 @@ contract PelitaBangsaAcademy3 is ERC20, ERC20Burnable, Ownable, ERC20Permit {
         rentals[msg.sender] = Rental({
             daysRented: rentalDays,
             startTimestamp: startTimestamp,
-            endTimestamp: endTimestamp
+            endTimestamp: endTimestamp,
+            tokensEarned: tokensToMint
         });
 
         emit Rented(msg.sender, rentalDays, startTimestamp, endTimestamp);
@@ -77,16 +80,12 @@ contract PelitaBangsaAcademy3 is ERC20, ERC20Burnable, Ownable, ERC20Permit {
     }
 
     // Updated getStatus function with the public visibility specifier
-    function getStatus(address renter) public view returns (address, uint256, uint256, uint256) {
+    function getStatus(address renter) public view returns (address, uint256, uint256, uint256, uint256) {
         Rental memory rental = rentals[renter];
-        return (renter, rental.daysRented, rental.startTimestamp, rental.endTimestamp);
+        return (renter, rental.daysRented, rental.startTimestamp, rental.endTimestamp, rental.tokensEarned);
     }
 
     function setVillaPricePerDay(uint256 _villaPricePerDay) public onlyOwner {
         villaPricePerDay = _villaPricePerDay;
     }
-
-   // function getVillaPricePerDay() public view returns (uint256) {
-   // return villaPricePerDay;
-//}
 }
